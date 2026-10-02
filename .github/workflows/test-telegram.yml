@@ -1,0 +1,41 @@
+name: Test Telegram
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Telegram test message
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          python - <<'PY'
+          import os
+          import requests
+
+          token = os.environ["TELEGRAM_BOT_TOKEN"]
+          chat_id = "7425815660"
+
+          url = f"https://api.telegram.org/bot{token}/sendMessage"
+
+          response = requests.post(
+              url,
+              json={
+                  "chat_id": chat_id,
+                  "text": "✅ Edchemy monitor test: GitHub Actions can send messages to Telegram."
+              },
+              timeout=30,
+          )
+
+          print("Telegram HTTP status:", response.status_code)
+
+          data = response.json()
+          print("Telegram API success:", data.get("ok"))
+
+          if not data.get("ok"):
+              print("Telegram error:", data)
+              raise SystemExit(1)
+          PY
