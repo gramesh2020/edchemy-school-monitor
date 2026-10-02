@@ -1,4 +1,4 @@
-name: Test Edchemy Connection
+name: Test Edchemy API
 
 on:
   workflow_dispatch:
@@ -21,20 +21,30 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install requests
 
-      - name: Test Python environment
-        run: |
-          python --version
-          python -c "import requests; print('requests available:', requests.__version__)"
-
-      - name: Test Edchemy connectivity
+      - name: Test Edchemy API authentication
+        env:
+          EDCHEMY_AUTH: ${{ secrets.EDCHEMY_AUTH }}
         run: |
           python - <<'PY'
+          import os
           import requests
 
-          url = "https://edchemy.azaleakids.in"
+          authorization = os.environ["EDCHEMY_AUTH"]
 
-          response = requests.get(url, timeout=30)
+          url = "https://edchemy.azaleakids.in/api/v2/external/call"
 
-          print("Edchemy HTTP status:", response.status_code)
-          print("Edchemy reachable: YES")
+          headers = {
+              "authorization": authorization,
+              "content-type": "application/json",
+          }
+
+          response = requests.post(
+              url,
+              headers=headers,
+              json={},
+              timeout=30,
+          )
+
+          print("Edchemy API HTTP status:", response.status_code)
+          print("Response received:", response.text[:500])
           PY
