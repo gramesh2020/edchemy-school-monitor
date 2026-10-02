@@ -16,35 +16,57 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install requests
+      - name: Install requests
+        run: python -m pip install requests
 
-      - name: Test Edchemy API authentication
+      - name: Test Edchemy API
         env:
           EDCHEMY_AUTH: ${{ secrets.EDCHEMY_AUTH }}
+          STUDENT_GUID: ${{ secrets.EDCHEMY_STUDENT_GUID }}
+          USER_ID: ${{ secrets.EDCHEMY_USER_ID }}
+          ACADEMIC_YEAR_ID: ${{ secrets.EDCHEMY_ACADEMIC_YEAR_ID }}
         run: |
           python - <<'PY'
           import os
           import requests
 
-          authorization = os.environ["EDCHEMY_AUTH"]
+          API_URL = "https://edchemy.azaleakids.in/api/v2/external/call"
 
-          url = "https://edchemy.azaleakids.in/api/v2/external/call"
+          authorization = os.environ["EDCHEMY_AUTH"]
+          student_guid = os.environ["STUDENT_GUID"]
+          user_id = os.environ["USER_ID"]
+          academic_year_id = os.environ["ACADEMIC_YEAR_ID"]
 
           headers = {
               "authorization": authorization,
+              "accept": (
+                  "application/json, text/javascript, "
+                  "*/*; q=0.01"
+              ),
               "content-type": "application/json",
+              "user-agent": (
+                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                  "AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) "
+                  "Chrome/153.0.0.0 Safari/537.36"
+              ),
+          }
+
+          payload = {
+              "student_guids": f"'{student_guid}'",
+              "call_meta_data":
+                  "all.interaction.DiaryService.getDiarysForStudent",
+              "user_id": user_id,
+              "academic_year_id": academic_year_id,
           }
 
           response = requests.post(
-              url,
+              API_URL,
               headers=headers,
-              json={},
+              json=payload,
               timeout=30,
           )
 
           print("Edchemy API HTTP status:", response.status_code)
-          print("Response received:", response.text[:500])
+          print("Response:", response.text[:1000])
           PY
