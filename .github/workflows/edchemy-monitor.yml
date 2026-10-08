@@ -1,11 +1,6 @@
 name: Edchemy Daily Report Monitor
 
 on:
-  schedule:
-    # 3:05 PM India time
-    - cron: "5 15 * * *"
-      timezone: "Asia/Kolkata"
-
   # Allows us to run the monitor manually for testing.
   workflow_dispatch:
 
